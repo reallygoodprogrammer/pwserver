@@ -1,0 +1,11 @@
+services:
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: pwserver
+    ports:
+      - "8000:8000"
+    environment:
+      - PW_HEADLESS=1
+    restart: always
