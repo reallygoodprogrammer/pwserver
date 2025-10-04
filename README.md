@@ -2,18 +2,22 @@
 
 *A server for running and logging playwright code*
 
-The purpose of this application is to provide a way to run custom 
-playwright 'plugins' that can be accessed and ran through the servers
-API endpoints.
 
 A **plugin** is defined as some custom python playwright code that is
 ran and managed by the server.
 
+The purpose of this application is to provide a way to run custom plugins
+that can be accessed and ran through the servers API to manage playwright
+scripts and scheduling.
+
+Notice that this server isn't intended to be publicly accessible and would
+likely need further configuration to meet such task.
+
 ## Basic Setup
 
 You will need to create two folders in the root directory of the
-project: `data` and `mods`. You can also configure this to some other
-folders in the `docker-compose.yml` volume mounts, that is just the current
+repo: `data` and `mods`. You can also configure this to some other
+paths in the `docker-compose.yml` volume mounts, that is just the current
 default mount locations used.
 
 ```bash
@@ -22,16 +26,17 @@ mkdir data
 mkdir mods
 ```
 
-Any plugin will need to be put in `mods`.
+Any plugins will need to be added in the `mods` directory.
 
-Any data accessed by said plugin will need to be put in `data` and can be
-accessed through the `/data` path at runtime.
+Any data accessed by said plugins will need to be put in the `data` 
+directory and can be accessed by plugin code using the `/data` path 
+at runtime (assuming server is being ran by docker).
 
 ## Usage
 
 To start the server, use `docker compose up`.
 
-At this point, you can have something that accesses the server's API (ex. UI),
+At this point, you can create something that accesses the server's API (ex. UI),
 or use the CLI app `cli.py` if your plugins have client functions:
 
 ```bash
@@ -43,7 +48,7 @@ usage: python3 cli.py <module> [OPTIONS] [<args>,]
 
 ---
 
-## Writing Plugins
+## Writing / Configuring Plugins
 
 There are a few globals and fastapi specific configurations that will
 need to be defined in your plugin:
