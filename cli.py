@@ -72,7 +72,6 @@ def main():
         print(f"unknown module: {sys.argv[1]}")
         help(1)
 
-    print("keys:", config.client_modules[sys.argv[1]].keys())
     output = config.client_modules[sys.argv[1]]["entry"](BASE_URL, sys.argv[2:])
     if output:
         print(output)

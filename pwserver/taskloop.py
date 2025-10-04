@@ -12,7 +12,6 @@ browser = None
 headless = bool(int(os.getenv("PW_HEADLESS", False)))
 
 actions = {}
-print(config.actions.values())
 for module in config.actions.values():
     for k, v in module.items():
         actions[k] = v
