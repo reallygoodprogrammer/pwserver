@@ -6,8 +6,7 @@ import uuid
 
 from . import taskloop
 from . import tasks
-
-from settings import ROUTERS
+from . import config
 
 # FastAPI
 app = FastAPI(
@@ -56,5 +55,5 @@ async def status(task_id: str):
     return tasks.jobs[task_id]
 
 
-for r in ROUTERS:
+for r in config.routers:
     app.include_router(r)
