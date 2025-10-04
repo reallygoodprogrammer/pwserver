@@ -1,13 +1,9 @@
 import settings
 
 routers = []
-client_modules = {}
-actions = {}
 
-for m, v in settings.MODULES.items():
+for p, v in settings.PLUGINS.items():
     try:
-        routers.append(v.ROUTER)
-        client_modules[m] = v.CLIENT_SETTINGS
-        actions[m] = v.ACTIONS
+        routers.append(v._router)
     except Exception as e:
-        raise Exception(f"FAILED LOADING CLIENT MODULES: {e}")
+        raise Exception(f"failed loading router from plugin class '{v}': {e}")

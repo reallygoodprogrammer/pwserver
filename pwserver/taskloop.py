@@ -3,7 +3,6 @@ import asyncio
 import os
 from playwright.async_api import async_playwright
 
-
 from . import config
 from . import tasks
 
@@ -11,17 +10,11 @@ pw = None
 browser = None
 headless = bool(int(os.getenv("PW_HEADLESS", False)))
 
-actions = {}
-for module in config.actions.values():
-    for k, v in module.items():
-        actions[k] = v
-
 async def taskloop():
     while True:
-        task_id, action, *args = await tasks.job_queue.get()
-        tasks.jobs[task_id]["status"] = "pending"
-        asyncio.create_task(process(task_id, action, *args))
-        tasks.job_queue.task_done()
+        task_id, action, req = await tasks.dequeue()
+        asyncio.create_task(process(task_id, action, req))
+        tasks.mark_done()
 
 async def start_browser():
     global pw
@@ -32,16 +25,11 @@ async def start_browser():
 async def stop_browser():
     await pw.stop()
 
-# process some action, using the actions dict
-async def process(task_id: str, action: str, *args):
-    if action not in actions.keys():
-        raise Exception(f"no action called '{action}' exists")
+async def process(task_id: str, action: callable, req):
     ctx = await browser.new_context()
-    tasks.jobs[task_id]["output"] = []
     try:
-        tasks.jobs[task_id]["status"] = await actions[action](tasks.jobs[task_id], ctx, *args)
+        await action(task_id, ctx, req)
     except Exception as e:
-        tasks.jobs[task_id]["status"] = "failed"
-        tasks.jobs[task_id]["output"].append(f"error: {e}")
+        tasks.failure(task_id, "exception occured during runtime: {e}")
         raise(e)
     await ctx.close()
