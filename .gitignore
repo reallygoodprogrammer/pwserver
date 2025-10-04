@@ -1,4 +1,5 @@
 .DS_Store
 .venv/
 data/
+mods/
 **/__pycache__/
