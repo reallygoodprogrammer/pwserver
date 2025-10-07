@@ -26,7 +26,7 @@ chmod +x
 The client can be ran using the `client.py` script:
 
 ```bash
-usage: python3 cli.py <module> [options] [<args>,]
+usage: python3 client.py <module> [options] [<args>,]
 
 
 # loaded module names and descriptions will appear here
