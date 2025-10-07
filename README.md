@@ -1,6 +1,8 @@
 # pwserver
 
-*A server for running, scheduling, and simplifying multiple playwright jobs*
+***A server for running, scheduling, and simplifying multiple playwright jobs***
+
+---
 
 A **plugin** is defined as some custom python playwright job that is
 ran and managed by the server but written by you, the developer.
@@ -106,7 +108,7 @@ A client interface will be automatically generated for your plugin accessible wi
 
 ---
 
-# License
+## License
 
 This project licensing falls under the MIT License which found in the [LICENSE](LICENSE)
 file in this repo.
