@@ -1,0 +1,16 @@
+#!/bin/bash
+
+IN_VENV=$(env | grep VIRTUAL_ENV)
+if [ -z "${IN_VENV}" ]; then
+	if [ -d "./.venv" ]; then
+		echo "using found '.venv' python3 environment folder..."
+		source .venv/bin/activate
+	else
+		echo "no '.venv' folder, building python environment..."
+		python3 -m venv .venv
+		source .venv/bin/activate
+		python3 -m pip install -r requirements.txt
+	fi
+fi
+
+uvicorn pwserver.server:app
