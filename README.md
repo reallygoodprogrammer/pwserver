@@ -37,10 +37,14 @@ usage: python3 cli.py <module> [options] [<args>,]
 
 ## Plugins
 
+Writing plugins for use with `pwserver` should be easy and painless. Here are some
+instructions on creating your first plugin.
+
+### Define Your Plugin
+
 You will need to create a class extending pydantic's `BaseModel` which will
 define all of the input arguments and options that your plugin needs to run.
-After that you can create a `pwserver.plugin.BasePlugin` instance using the
-pydantic class like so.
+After that you can create a `BasePlugin` instance using the pydantic class:
 
 ```python3
 import pwserver.plugins as plugins
@@ -59,10 +63,11 @@ my_plugin = pwserver.BasePlugin(
 )
 ```
 
-From there you can create functions that takes your jobs `task_id`, an instance of a pw browser
-context, and an instance of your pydantic model as arguments. You can then use the appropriate
-`BasePlugin` decorator depending on the method you would like to use for the corresponding 
-endpoint.
+### Create Your Plugin's Routes
+
+From there you can create functions that will take a job's `task_id`, instance of a pw browser
+context, and instance of your extended pydantic model as arguments. Then use the appropriate
+decorator for adding the job to your plugin instance:
 
 ```python3
 # for writing output from the job:
@@ -79,11 +84,15 @@ async def update_all(task_id: int, ctx, body: JobData):
     page.close()
 ```
 
+### Add Your Plugin to `pwserver`
+
 The last thing you will need to do is add your plugin in the `settings.py` file within
 the `PLUGINS` dictionary like so:
 
 ```python3
 from my_plugin_file import my_plugin
+
+# ...
 
 plugins = {
     "my-plugin": my_plugin,
@@ -91,6 +100,9 @@ plugins = {
 ```
 
 Congrats! Once you've completed all of that you have created your first `pwserver` plugin!
+
+A client interface will be automatically generated for your plugin accessible with the 
+`client.py` script.
 
 ---
 
