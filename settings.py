@@ -8,6 +8,6 @@ BASE_URL = "http://127.0.0.1:8000"
 # Map of module names to module import
 # 
 # Add all of your plugins for pwserver here!
-MODULES = {
-    "cl": cl,
+PLUGINS = {
+    "cl": cl.cl_plugin,
 }

@@ -49,8 +49,8 @@ def status(task_ids):
 #       -> if not `None`, exit after print w/ status
 def help(status_code: int = None, module: str = None, modules: dict = {}):
     if not module:
-        print("usage: python3 cli.py <module> [OPTIONS] [<args>,]\n")
-        for k, m in config.client_modules.items(): print(f"{k}\t{m['description']}")
+        print("usage: python3 cli.py <module> [options] [<args>,]\n")
+        for k, m in config.plugins.items(): print(f"{k}\t{m.description}")
         print("\n-l/--list\t\tlist the currently running tasks w/ status")
         print("-s/--status <ID>\tretrieve the status / logs for task_id ID")
     elif len(modules.keys()) > 0 and module:
@@ -68,15 +68,15 @@ def main():
         list_all()
     elif sys.argv[1] in ["-s", "--status"]:
         status(sys.argv[2:])
-    elif sys.argv[1] not in config.client_modules.keys():
+    elif sys.argv[1] not in config.plugins.keys():
         print(f"unknown module: {sys.argv[1]}")
         help(1)
 
-    output = config.client_modules[sys.argv[1]]["entry"](BASE_URL, sys.argv[2:])
+    output = config.plugins[sys.argv[1]].client_entry(BASE_URL, sys.argv[2:])
     if output:
         print(output)
     else:
-        help(1, sys.argv[1], config.client_modules)
+        help(1, sys.argv[1], config.plugins)
 
 if __name__ == "__main__":
     main()
