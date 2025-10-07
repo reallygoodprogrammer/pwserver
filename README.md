@@ -12,7 +12,6 @@ simple plugins that automate the process of creating the API endpoints and a cli
 for interact with said endpoints. Instructions for creating a plugin is described
 below.
 
-
 ## Usage
 
 The server can be started with the shell script in the repo:
@@ -26,6 +25,7 @@ The client can be ran using the `client.py` script:
 
 ```bash
 usage: python3 cli.py <module> [options] [<args>,]
+
 
 # loaded module names and descriptions will appear here
 
