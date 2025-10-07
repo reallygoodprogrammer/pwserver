@@ -14,7 +14,7 @@ async def taskloop():
     while True:
         task_id, action, req = await tasks.dequeue()
         asyncio.create_task(process(task_id, action, req))
-        tasks.mark_done()
+        await tasks.mark_done()
 
 async def start_browser():
     global pw

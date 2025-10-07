@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from datetime import datetime
 
 jobs = {}
 job_queue = asyncio.Queue()
@@ -29,6 +30,6 @@ def write(task_id: str, message: str):
     jobs[task_id]["output"].append(final_message)
 
 # Write failure to task data
-def write_failure(task_id: str, message: str = None):
+def failure(task_id: str, message: str = None):
     jobs[task_id]["status"] = "failed"
     if message: write(task_id, message)

@@ -9,5 +9,5 @@ BASE_URL = "http://127.0.0.1:8000"
 # 
 # Add all of your plugins for pwserver here!
 PLUGINS = {
-    "cl": cl_plugin,
+    "cl": cl.cl_plugin,
 }
