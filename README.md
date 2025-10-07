@@ -1,6 +1,6 @@
 # pwserver
 
-*A server for running, managin, logging playwright jobs*
+*A server for running, scheduling, and simplifying multiple playwright jobs*
 
 A **plugin** is defined as some custom python playwright job that is
 ran and managed by the server but written by you, the developer.
