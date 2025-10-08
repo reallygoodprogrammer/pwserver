@@ -101,10 +101,13 @@ plugins = {
 }
 ```
 
-Congrats! Once you've completed all of that you have created your first `pwserver` plugin!
+Congrats! Once you've completed all of that you have created your first `pwserver` plugin. A client interface will be automatically generated for your plugin accessible with the `client.py` script.
 
-A client interface will be automatically generated for your plugin accessible with the 
-`client.py` script.
+### Different Plugin Classes
+
+Instead of using the `BasePlugin` class:
+
+- For automatic scheduling functionality, use `ScheduledPlugin`
 
 ---
 
