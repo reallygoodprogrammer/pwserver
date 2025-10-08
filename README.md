@@ -16,11 +16,10 @@ below.
 
 ## Usage
 
-The server can be started with the shell script in the repo:
+The server can be started using uvicorn:
 
 ```bash
-chmod +x
-./pwserve
+uvicorn pwserver.server:app
 ```
 
 The client can be ran using the `client.py` script:
