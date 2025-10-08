@@ -31,4 +31,5 @@ async def process(task_id: str, action: callable, req):
         await action(task_id, ctx, req)
     except Exception as e:
         tasks.failure(task_id, f"exception occured during runtime: {e}")
+        raise(e)
     await ctx.close()

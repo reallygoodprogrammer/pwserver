@@ -1,6 +1,7 @@
 from typing import TypeVar, Type, Generic
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from typing import Optional
 
 from . import tasks
 
@@ -137,6 +138,9 @@ class BasePlugin(Generic[_JsonType]):
         import getopt
         import requests
 
+        method = "GET"
+        route = None
+
         opts, args = getopt.getopt(*args, self._short_opts, self._long_opts)
 
         fopts = {}
@@ -146,6 +150,11 @@ class BasePlugin(Generic[_JsonType]):
                 if field == "!_help":
                     return self._client_help()
                 elif field == "!_method":
+                    if len(self._args) == 0:
+                        return self._client_help(
+                            f"no 'route' argument provided"
+                        )
+                    route = args[0] if args[0][0] == "/" else "/" + args[0]
                     if a not in self._route_method[route]:
                         raise Exception(f"unsupported 'method' option: {a}")
                     method = a
@@ -157,7 +166,6 @@ class BasePlugin(Generic[_JsonType]):
             return self._client_help(f"no '{self._args[len(args)]}' argument provided")
 
         route = args[0]
-        method = "GET"
         if "/" + route in self.routes:
             route = "/" + route
         elif route not in self.routes:
@@ -193,18 +201,16 @@ class ScheduledPlugin(BasePlugin):
         self, 
         name: str, 
         datatype: Type[_JsonType],
-        min_time: float = None,
-        max_time: float = None,
         description: str = None,
     ):
         super().__init__(name, datatype, description)
 
         class _ExtendedDataClass(datatype):
             time: float = 60.0
-            min_time: float = None
-            max_time: float = None
+            min_time: Optional[float] = None
+            max_time: Optional[float] = None
 
-        seld._datatype = _ExtendedDataClass
+        self._datatype = _ExtendedDataClass
 
         for x in ["time", "min-time", "max-time"]:
             self._client_help_msg.insert(
@@ -226,14 +232,14 @@ class ScheduledPlugin(BasePlugin):
         if method == "POST":
             async def route_callback(body: model): 
                 return (await tasks.enqueue(
-                    self._time_callback(callback),
+                    self._time_callback(callback, model),
                     body
                 ))
             return route_callback
         elif method == "GET":
             async def route_callback(body: model = Depends()):
                 return (await tasks.enqueue(
-                    self._time_callback(callback), 
+                    self._time_callback(callback, model), 
                     body
                 ))
             return route_callback
@@ -242,7 +248,7 @@ class ScheduledPlugin(BasePlugin):
 
     # create a callable function that times a task repeatedly depending on
     # min/max-time arguments in body
-    def _time_callback(callback: callable, modeltype):
+    def _time_callback(self, callback: callable, modeltype):
         async def timed_callback(task_id: str, ctx, body: modeltype):
             if not (body.time or (body.min_time and body.max_time)):
                 raise Exception("invalid time options: must provide time or min&max times")

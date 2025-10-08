@@ -50,12 +50,13 @@ After that you can create a `BasePlugin` instance using the pydantic class:
 ```python3
 import pwserver.plugins as plugins
 from pydantic import BaseModel
+from typing import Optional
 
 def JobData(BaseModel):
     # without a default, the argument is required
     url: str
     # with a default, the argument is not required
-    optional_arg: bool = False
+    optional_arg: Optional[bool] = None
 
 my_plugin = pwserver.BasePlugin(
     name='my-plugin',
