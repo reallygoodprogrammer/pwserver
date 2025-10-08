@@ -21,15 +21,17 @@ async def mark_done():
     job_queue.task_done()
 
 # Write message to task data for 'task_id'
-def write(task_id: str, message: str):
+def write(task_id: str, message: str) -> str:
     final_message = "{} {}: {}".format(
         datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         task_id,
         message,
     )
     jobs[task_id]["output"].append(final_message)
+    return "updated"
 
 # Write failure to task data
-def failure(task_id: str, message: str = None):
+def failure(task_id: str, message: str = None) -> str:
     jobs[task_id]["status"] = "failed"
     if message: write(task_id, message)
+    return "failed"

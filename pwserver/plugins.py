@@ -40,12 +40,12 @@ class BasePlugin(Generic[_JsonType]):
         self._long_opts = ["help", "method="]
         # self._field_types -> mapping of field names to field types for conversion
         self._field_types = {
-            "help": bool,
-            "method": str,
+            "!_help": bool,
+            "!_method": str,
         }
         # self._option_mappings -> dict of getopt option flag to field name
         self._option_mappings = {
-            "-h": "help",
+            "-h": "!_help",
             "--help": "!_help",
             "-X": "!_method",
             "--method": "!_method",
@@ -139,6 +139,20 @@ class BasePlugin(Generic[_JsonType]):
 
         opts, args = getopt.getopt(*args, self._short_opts, self._long_opts)
 
+        fopts = {}
+        for o, a in opts:
+            if o in self._option_mappings.keys():
+                field = self._option_mappings[o]
+                if field == "!_help":
+                    return self._client_help()
+                elif field == "!_method":
+                    if a not in self._route_method[route]:
+                        raise Exception(f"unsupported 'method' option: {a}")
+                    method = a
+                else:
+                    fopts[field] = self._field_types[field](a)
+
+
         if len(self._args) != len(args):
             return self._client_help(f"no '{self._args[len(args)]}' argument provided")
 
@@ -154,19 +168,6 @@ class BasePlugin(Generic[_JsonType]):
             field = self._args[i]
             fargs[field] = self._field_type[field](a)
 
-        fopts = {}
-        for o, a in opts:
-            if o in self._option_mappings.keys():
-                field = self._option_mappings[o]
-                if field == "!_help":
-                    self._client_help()
-                elif field == "!_method":
-                    if a not in self._route_method[route]:
-                        raise Exception(f"unsupported 'method' option: {a}")
-                    method = a
-                else:
-                    fopts[field] = self._field_types[field](a)
-
         body = self._datatype(**fargs, **fopts).model_dump()
 
         resp = None
@@ -181,3 +182,78 @@ class BasePlugin(Generic[_JsonType]):
     def _client_help(self, msg: str = None) -> str:
         if msg: return "\n".join(["\033[31m" + msg + "\033[0m"] + self._client_help_msg)
         return "\n".join(self._client_help_msg)
+
+
+
+# Scheduled Plugin
+#
+# Plugin for streamlining the process of creating scheduled tasks
+class ScheduledPlugin(BasePlugin):
+    def __init__(
+        self, 
+        name: str, 
+        datatype: Type[_JsonType],
+        min_time: float = None,
+        max_time: float = None,
+        description: str = None,
+    ):
+        super().__init__(name, datatype, description)
+
+        class _ExtendedDataClass(datatype):
+            time: float = 60.0
+            min_time: float = None
+            max_time: float = None
+
+        seld._datatype = _ExtendedDataClass
+
+        for x in ["time", "min-time", "max-time"]:
+            self._client_help_msg.insert(
+                2, 
+                f"--{x:28} {x.replace('-', ' ')} (minutes) between job executions"
+            )
+            if f"--{x}" in self._option_mappings.keys():
+                raise Exception(
+                    "cannot use reserved name '{x}' as field for ScheduledPlugin datatype"
+                )
+            self._option_mappings[f"--{x}"] = f"!_{x}"
+            self._long_opts.append(f"{x}=")
+            self._field_types[f"!_{x}"] = float
+
+
+    # returns the routing function based on appropriate task callback
+    def _setup_route_callback(self, callback: callable, method: str = "GET"):
+        model = self._datatype
+        if method == "POST":
+            async def route_callback(body: model): 
+                return (await tasks.enqueue(
+                    self._time_callback(callback),
+                    body
+                ))
+            return route_callback
+        elif method == "GET":
+            async def route_callback(body: model = Depends()):
+                return (await tasks.enqueue(
+                    self._time_callback(callback), 
+                    body
+                ))
+            return route_callback
+        raise Exception(f"method {method} setup callback is undefined")
+
+
+    # create a callable function that times a task repeatedly depending on
+    # min/max-time arguments in body
+    def _time_callback(callback: callable, modeltype):
+        async def timed_callback(task_id: str, ctx, body: modeltype):
+            if not (body.time or (body.min_time and body.max_time)):
+                raise Exception("invalid time options: must provide time or min&max times")
+            while True:
+                await callback(task_id, ctx, body)
+                wait_time = body.time
+                if body.min_time != body.max_time:
+                    wait_time = (random.random() * (body.min_time - body.max_time)) + body.min_time
+                starts_at = (datetime.now() + timedelta(minutes=wait_time)).strftime("%Y-%m-%d %H:%M:%S")
+                write(task_id, f"{self.name}: sleeping till {starts_at}")
+                await asyncio.sleep(wait_time * 60.0)
+        return timed_callback
+
+
