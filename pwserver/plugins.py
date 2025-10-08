@@ -1,7 +1,9 @@
+import asyncio
 from typing import TypeVar, Type, Generic
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime, timedelta
 
 from . import tasks
 
@@ -215,7 +217,7 @@ class ScheduledPlugin(BasePlugin):
         for x in ["time", "min-time", "max-time"]:
             self._client_help_msg.insert(
                 2, 
-                f"--{x:28} {x.replace('-', ' ')} (minutes) between job executions"
+                f"--{x:25} {x.replace('-', ' ')} (minutes) between job executions"
             )
             if f"--{x}" in self._option_mappings.keys():
                 raise Exception(
@@ -257,9 +259,10 @@ class ScheduledPlugin(BasePlugin):
                 wait_time = body.time
                 if body.min_time != body.max_time:
                     wait_time = (random.random() * (body.min_time - body.max_time)) + body.min_time
+                tasks.write(task_id, f"wait time: {wait_time}")
                 starts_at = (datetime.now() + timedelta(minutes=wait_time)).strftime("%Y-%m-%d %H:%M:%S")
-                write(task_id, f"{self.name}: sleeping till {starts_at}")
-                await asyncio.sleep(wait_time * 60.0)
+                tasks.write(task_id, f"{self.name}: sleeping till {starts_at}")
+                await asyncio.sleep(wait_time)
         return timed_callback
 
 

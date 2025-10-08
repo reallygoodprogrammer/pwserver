@@ -22,9 +22,8 @@ async def mark_done():
 
 # Write message to task data for 'task_id'
 def write(task_id: str, message: str) -> str:
-    final_message = "{} {}: {}".format(
+    final_message = "{}: {}".format(
         datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
-        task_id,
         message,
     )
     jobs[task_id]["output"].append(final_message)
